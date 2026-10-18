@@ -17,6 +17,46 @@ $("settings").onclick=()=>{$("key").value=localStorage.getItem("lotd_api_key")||
 $("cancel").onclick=()=>$("config").close();
 $("save").onclick=()=>{const v=$("key").value.trim();if(!/^AIza[\w-]{20,}$/.test(v)){$("configError").textContent="Dit lijkt geen geldige Google Maps API-sleutel.";return;}localStorage.setItem("lotd_api_key",v);$("config").close();location.reload()};
 window.gm_authFailure=()=>{$("status").textContent="Google Maps weigert de sleutel. Controleer de websitebeperking en facturering.";$("sheet").classList.remove("collapsed")};
-window.initGoogleMap=()=>{try{$("map").style.display="block";$("fallback").style.display="none";map=new google.maps.Map($("map"),{center:{lat:51.918,lng:4.476},zoom:14,fullscreenControl:true,mapTypeControl:false,streetViewControl:false,gestureHandling:"greedy"});geocoder=new google.maps.Geocoder();bounds=new google.maps.LatLngBounds();let done=0,success=0;markers=Array(places.length).fill(null);places.forEach((p,i)=>{geocoder.geocode({address:p.address},(results,status)=>{done++;if(status==="OK"&&results&&results[0]){success++;const pos=results[0].geometry.location;let m=new google.maps.Marker({map,position:pos,title:p.name,label:{text:p.id===21?"T":String(p.id),color:"#fff",fontWeight:"bold"},icon:{path:google.maps.SymbolPath.CIRCLE,scale:18,fillColor:p.id===21?"#178b65":"#d92c30",fillOpacity:1,strokeColor:"#fff",strokeWeight:2}});markers[i]=m;bounds.extend(pos);const popup=new google.maps.InfoWindow({content:'<div style="color:#111"><b>'+esc(p.name)+'</b><p>'+esc(p.stages)+'</p><a target="_blank" rel="noopener" href="'+route(p)+'">Wandelroute in Google Maps</a></div>'});m.addListener("click",()=>popup.open(map,m));}if(done===places.length){if(success)map.fitBounds(bounds,42);$("status").textContent=success+" van 21 locaties geplaatst"+(success<21?" — controleer ontbrekende adressen.":"");if(success<21){$("sheet").classList.remove("collapsed");$("toggle").textContent="Lijst sluiten ▼"}}})})}catch(err){$("status").textContent="Fout bij kaartladen: "+err.message;$("sheet").classList.remove("collapsed")}};
+window.initGoogleMap=async()=>{try{
+ $("map").style.display="block";$("fallback").style.display="none";
+ map=new google.maps.Map($("map"),{center:{lat:51.918,lng:4.476},zoom:14,fullscreenControl:true,mapTypeControl:false,streetViewControl:false,gestureHandling:"greedy"});
+ geocoder=new google.maps.Geocoder();bounds=new google.maps.LatLngBounds();
+ markers=Array(places.length).fill(null);
+ let success=0,failed=[];
+ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ let saved={};try{saved=JSON.parse(localStorage.getItem("lotd_coordinates_v1")||"{}")}catch(_){}
+ for(let i=0;i<places.length;i++){
+   const p=places[i];let position=null;
+   if(saved[p.address]&&Number.isFinite(saved[p.address].lat)&&Number.isFinite(saved[p.address].lng)){
+     position=new google.maps.LatLng(saved[p.address].lat,saved[p.address].lng);
+   }else{
+     for(let attempt=0;attempt<3;attempt++){
+       const response=await new Promise(resolve=>geocoder.geocode({address:p.address},(results,status)=>resolve({results,status})));
+       if(response.status==="OK"&&response.results?.[0]){
+         position=response.results[0].geometry.location;
+         saved[p.address]={lat:position.lat(),lng:position.lng()};
+         try{localStorage.setItem("lotd_coordinates_v1",JSON.stringify(saved))}catch(_){}
+         break;
+       }
+       if(response.status!=="OVER_QUERY_LIMIT"&&response.status!=="UNKNOWN_ERROR")break;
+       await sleep(600*(attempt+1));
+     }
+   }
+   if(position){
+     success++;const m=new google.maps.Marker({map,position,title:p.name,label:{text:p.id===21?"T":String(p.id),color:"#fff",fontWeight:"bold"},icon:{path:google.maps.SymbolPath.CIRCLE,scale:18,fillColor:p.id===21?"#178b65":"#d92c30",fillOpacity:1,strokeColor:"#fff",strokeWeight:2}});
+     markers[i]=m;bounds.extend(position);
+     const popup=new google.maps.InfoWindow({content:'<div style="color:#111"><b>'+esc(p.name)+'</b><p>'+esc(p.stages)+'</p><a target="_blank" rel="noopener" href="'+route(p)+'">Wandelroute in Google Maps</a></div>'});
+     m.addListener("click",()=>popup.open(map,m));
+     if(success===1)map.setCenter(position);
+   }else failed.push(p.name);
+   $("status").textContent="Locaties laden: "+(i+1)+"/"+places.length+" ("+success+" geplaatst)";
+   if(i<places.length-1)await sleep(180);
+ }
+ if(success)map.fitBounds(bounds,42);
+ $("status").textContent=success+" van "+places.length+" locaties geplaatst"+(failed.length?". Niet gevonden: "+failed.join(", "):".");
+ if(failed.length){$("sheet").classList.remove("collapsed");$("toggle").textContent="Lijst sluiten ▼";}
+ render();
+ }catch(err){$("status").textContent="Fout bij kaartladen: "+err.message;$("sheet").classList.remove("collapsed");}
+};
 render();const k=localStorage.getItem("lotd_api_key");if(k){const s=document.createElement("script");s.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(k)+"&callback=initGoogleMap&loading=async";s.async=true;s.onerror=()=>{$("status").textContent="Google Maps kan niet worden geladen. Controleer internet en sleutel.";$("sheet").classList.remove("collapsed")};document.head.appendChild(s)}
 </script></body></html>
