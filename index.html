@@ -115,18 +115,4 @@ $("navSchema").onclick=()=>setTab(true);$("navZalen").onclick=()=>setTab(false);
 renderSchema();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 render();const k=localStorage.getItem("lotd_api_key");if(k){const s=document.createElement("script");s.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(k)+"&callback=initGoogleMap&loading=async";s.async=true;s.onerror=()=>showFallback("Google Maps kan niet worden geladen. De gewone kaart blijft beschikbaar. Wis zo nodig de sleutel via ⚙.");document.head.appendChild(s)}
-</script><script>
-(function(){
- // Volledig scherm als app-gevoel wanneer de site niet als app geïnstalleerd is
- var standalone=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone;
- var de=document.documentElement;if(standalone||!de.requestFullscreen)return;
- var want=false;try{want=localStorage.getItem("lotd_fs")==="1"}catch(e){}
- function go(){if(!document.fullscreenElement)de.requestFullscreen({navigationUI:"hide"}).catch(function(){})}
- var b=document.createElement("button");b.type="button";b.id="fsBtn";b.setAttribute("aria-label","Volledig scherm");b.textContent="⛶";
- b.style.cssText="position:fixed;z-index:50;right:max(10px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));width:36px;height:36px;border-radius:9px;border:0;background:#ff735a;color:#18151b;font-size:19px;font-weight:800;box-shadow:0 3px 10px #0007;cursor:pointer";
- b.onclick=function(e){e.stopPropagation();if(document.fullscreenElement){document.exitFullscreen();try{localStorage.setItem("lotd_fs","0")}catch(_){}}else{go();try{localStorage.setItem("lotd_fs","1")}catch(_){}}};
- document.addEventListener("fullscreenchange",function(){b.style.opacity=document.fullscreenElement?".55":"1"});
- if(want)document.addEventListener("pointerdown",function f(){go();document.removeEventListener("pointerdown",f,true)},true);
- document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(b)});if(document.body)document.body.appendChild(b);
-})();
-</script></body></html>
+</script><script>if(document.fullscreenElement)document.exitFullscreen().catch(function(){});try{localStorage.removeItem("lotd_fs")}catch(e){}</script></body></html>
