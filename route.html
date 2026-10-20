@@ -122,7 +122,7 @@ let marks={};try{marks=JSON.parse(localStorage.getItem('marks')||'{}')}catch(e){
 const save=()=>{try{localStorage.setItem('marks',JSON.stringify(marks))}catch(e){}};
 const LBL=['geen markering','Must see','Graag','Als het uitkomt','overslaan','Optie'];const ORDER=[0,1,2,3,5,4];const CODE={groen:1,oranje:2,rood:3,wit:5,overslaan:4};
 document.querySelectorAll('.set').forEach(el=>{
-  const k=el.dataset.k; const def=CODE[(window.MARKS||{})[el.querySelector('.artist').textContent]]||0; const cur=()=>(k in marks)?+marks[k]:def; if(cur())el.dataset.c=cur();
+  const k=el.dataset.k; const MK=window.MARKS||{},art=el.querySelector('.artist').textContent,def=CODE[MK[k.slice(0,2)+'|'+art]||MK[art]]||0; const cur=()=>(k in marks)?+marks[k]:def; if(cur())el.dataset.c=cur();
   el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[cur()]);
   const cyc=()=>{const c=ORDER[(ORDER.indexOf(cur())+1)%ORDER.length]; if(c||def)marks[k]=c; else delete marks[k]; el.dataset.c=c||''; el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[c]); save()};
   el.addEventListener('click',cyc); el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cyc()}});
