@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#1f1fe0">
+<meta name="theme-color" content="#1f1fe0"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="LOTD 2026">
 <title>Left of the Dial 2026 • Mijn route</title>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -75,6 +75,7 @@ ol{list-style:none;margin:0;padding:0;display:grid}
   .walk,section h2,.slot .tag{break-after:avoid;page-break-after:avoid}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+@media (display-mode: standalone){body{padding-top:max(28px,env(safe-area-inset-top))}}
 </style>
 <style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
 </head>
@@ -130,6 +131,7 @@ document.querySelectorAll('.set').forEach(el=>{
 const rb=document.getElementById('reset');
 rb.onclick=()=>{if(rb.dataset.sure){marks={};save();location.reload();rb.textContent='Alles wissen';delete rb.dataset.sure}else{rb.dataset.sure=1;rb.textContent='Zeker? Tik nog een keer';setTimeout(()=>{delete rb.dataset.sure;rb.textContent='Alles wissen'},3000)}};
 try{const d=localStorage.getItem('eday');if(d)document.getElementById('tab'+d)?.click()}catch(e){}
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 
 </body>
