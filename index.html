@@ -17,10 +17,14 @@ async function initLeaflet(){try{
  $("lmap").style.display="block";$("fallback").style.display="none";
  lmap=L.map("lmap",{zoomControl:true}).setView([51.918,4.476],14);
  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(lmap);
- let saved={};try{saved=JSON.parse(localStorage.getItem("lotd_ll_v5")||"{}")}catch(_){}
+ let saved={};try{saved=JSON.parse(localStorage.getItem("lotd_ll_v6")||"{}")}catch(_){}
  const q=p=>p.address.replace(", Nederland","");
- const pts=await Promise.all(places.map(async p=>{if(saved[p.address])return saved[p.address];try{const base="https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?rows=1&fl=centroide_ll,type&fq=gemeentenaam:Rotterdam&q="+encodeURIComponent(q(p));let j=await (await fetch(base+"&fq=type:adres")).json();if(!j.response.docs.length)j=await (await fetch(base)).json();const m=/POINT\(([\d.]+) ([\d.]+)\)/.exec(j.response.docs[0].centroide_ll);const ll=[+m[2],+m[1]];if(ll[0]<51.85||ll[0]>51.98||ll[1]<4.35||ll[1]>4.6)return null;saved[p.address]=ll;return ll}catch(_){return null}}));
- try{localStorage.setItem("lotd_ll_v5",JSON.stringify(saved))}catch(_){}
+ // geschatte posities als reserve, zodat er altijd spelden staan
+ const APPROX={"Annabel":[51.9249,4.4750],"Arminius":[51.9139,4.4721],"Baanhof":[51.9108,4.4756],"Barrio":[51.9256,4.4766],"BIRD":[51.9276,4.4801],"De Doelen":[51.9207,4.4733],"MONO":[51.9290,4.4800],"Paradijskerk":[51.9178,4.4716],"Reijngoud":[51.9292,4.4803],"Remastered":[51.9089,4.4825],"Rotown":[51.9179,4.4723],"Sahara":[51.9248,4.4754],"Salsability":[51.9243,4.4766],"Stalles (ingang oude Club Centraal)":[51.9182,4.4729],"Theater Rotterdam":[51.9196,4.4738],"Uniek":[51.9190,4.4739],"V11":[51.9165,4.4880],"V2_":[51.9160,4.4726],"Waalse Kerk":[51.9140,4.4790],"WORM":[51.9148,4.4751],"Ticketbalie":[51.9172,4.4721]};
+ const geo=async p=>{if(saved[p.address])return saved[p.address];const base="https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?rows=1&fl=centroide_ll&q="+encodeURIComponent(q(p));for(const url of [base+"&fq=type:adres",base]){try{const r=await fetch(url);if(!r.ok)continue;const j=await r.json();const d=j&&j.response&&j.response.docs&&j.response.docs[0];if(!d)continue;const m=/POINT\(([\d.]+) ([\d.]+)\)/.exec(d.centroide_ll);if(!m)continue;const ll=[+m[2],+m[1]];if(ll[0]<51.88||ll[0]>51.96||ll[1]<4.42||ll[1]>4.54)continue;saved[p.address]=ll;return ll}catch(_){}}return null};
+ const pts=[];for(let i=0;i<places.length;i+=4){const part=await Promise.all(places.slice(i,i+4).map(geo));pts.push(...part)}
+ const approxUsed=[];places.forEach((p,i)=>{if(!pts[i]&&APPROX[p.name]){pts[i]=APPROX[p.name];approxUsed.push(p.name)}});
+ try{localStorage.setItem("lotd_ll_v6",JSON.stringify(saved))}catch(_){}
  for(let i=0;i<pts.length;i++)for(let j=0;j<i;j++){if(pts[i]&&pts[j]&&Math.abs(pts[i][0]-pts[j][0])<0.00025&&Math.abs(pts[i][1]-pts[j][1])<0.0004){pts[i]=[pts[i][0],pts[i][1]+0.0006];}}
  const b=[];lmarks=Array(places.length).fill(null);
  places.forEach((p,i)=>{const ll=pts[i];if(!ll)return;const mine=myActs(p).length>0;const icon=L.divIcon({className:"",html:'<div class="pin'+(p.id===21?' tb':mine?' mine':'')+'"><span>'+(p.id===21?"🎟":"♪")+'</span></div>',iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-32]});lmarks[i]=L.marker(ll,{icon,title:p.name}).addTo(lmap).bindPopup(()=>popupHtml(p),{maxWidth:280});b.push(ll)});
