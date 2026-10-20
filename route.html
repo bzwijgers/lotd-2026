@@ -27,9 +27,9 @@ body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
 .wrap{max-width:680px;margin:0 auto;display:grid;gap:24px}
 h1{font:700 2.4rem/1 var(--display);text-transform:uppercase;color:var(--accent);margin:0;text-wrap:balance}
-.head{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.head{display:flex;gap:16px;align-items:center}
 .headtxt{flex:1 1 260px;min-width:0}
-.logo{width:150px;max-width:100%;height:auto;background:#fff;padding:6px;border-radius:4px;flex:none}
+.logo{width:132px;max-width:40%;flex:none;display:block}.logo img{display:block;width:100%;height:auto}
 .lede{color:var(--muted);margin:8px 0 0;max-width:60ch}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:8px;z-index:2}
 .tabs button{font:500 1rem var(--display);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--accent);background:transparent;color:var(--accent);padding:6px 14px;cursor:pointer}
@@ -82,11 +82,11 @@ ol{list-style:none;margin:0;padding:0;display:grid}
 
 
 <div class="wrap">
-  <a class="back" href="./">← Kaart met alle zalen</a>
+  <a class="back" href="./">← Terug</a>
   <header class="head">
-    <img class="logo" alt="Left of the Dial" src="logo.jpg">
+    <picture class="logo"><source srcset="logo-dark.png" media="(prefers-color-scheme: dark)"><img alt="Left of the Dial" src="logo.png"></picture>
     <div class="headtxt">
-    <h1>Left of the Dial · eigen route</h1>
+    <h1>Mijn route</h1>
     <p class="lede">Jouw eigen keuzes, met de looptijd tussen elke zaal en wat je eventueel mist. Waar je twijfelde staan de opties naast elkaar.</p>
     </div>
   </header>
