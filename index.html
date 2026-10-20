@@ -48,7 +48,7 @@ window.initGoogleMap=async()=>{try{
    if(position){
      success++;const m=new google.maps.Marker({map,position,title:p.name,label:{text:p.id===21?"T":String(p.id),color:"#fff",fontWeight:"bold"},icon:{path:google.maps.SymbolPath.CIRCLE,scale:18,fillColor:p.id===21?"#178b65":"#d92c30",fillOpacity:1,strokeColor:"#fff",strokeWeight:2}});
      markers[i]=m;bounds.extend(position);
-     const popup=new google.maps.InfoWindow({content:'<div style="color:#111"><b>'+esc(p.name)+'</b><p>'+esc(p.stages)+'</p><a target="_blank" rel="noopener" href="'+route(p)+'">Wandelroute in Google Maps</a></div>'});
+     const popup=new google.maps.InfoWindow({content:'<div style="color:#111"><b>'+esc(p.name)+'</b><p>'+esc(p.stages)+'</p>'+(a=>a.length?'<p style="margin:4px 0"><b>Mijn acts</b></p><ul style="margin:0 0 8px;padding-left:16px">'+a.map(x=>'<li>'+esc(x.day)+' '+esc(x.time)+' · '+esc(x.name)+(x.opt?' (optie)':'')+(p.stages.includes(';')?' · '+esc(x.stage):'')+'</li>').join('')+'</ul>':'<p style="color:#666">Geen acts uit mijn route.</p>')(myActs(p))+'<a target="_blank" rel="noopener" href="'+route(p)+'">Wandelroute in Google Maps</a></div>'});
      m.addListener("click",()=>popup.open(map,m));
      if(success===1)map.setCenter(position);
    }else failed.push(p.name);
