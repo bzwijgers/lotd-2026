@@ -41,4 +41,4 @@ window.LIKE={"Nina Winder-Lind":"Patti Smith, Aldous Harding, PJ Harvey","La Fle
 
 // Standaardkleuren per artiest (iedereen ziet ze; eigen klikken gaan voor).
 // Waarden: "groen" = must see, "oranje" = graag, "rood" = als het uitkomt, "wit" = optie, "overslaan".
-window.MARKS={};
+window.MARKS={"Nina Winder-Lind":"groen","La Flemme":"groen","Daufødt":"groen","Wesley & The Boys":"groen","The Jump Cuts":"groen","Lttl Mort":"groen","Child of Prague":"oranje"};
