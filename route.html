@@ -58,6 +58,8 @@ ol{list-style:none;margin:0;padding:0;display:grid}
 .set[data-c="1"]{border-left-color:var(--m1);background:var(--m1bg)} .set[data-c="1"] .mark{background:var(--m1);border-color:var(--m1)}
 .set[data-c="2"]{border-left-color:var(--m2);background:var(--m2bg)} .set[data-c="2"] .mark{background:var(--m2);border-color:var(--m2)}
 .set[data-c="3"]{border-left-color:var(--m3);background:var(--m3bg)} .set[data-c="3"] .mark{background:var(--m3);border-color:var(--m3)}
+.set[data-c="5"]{border-left-color:#9a9cb8;background:#ffffff;color:#14163a;box-shadow:inset 0 0 0 1px #c9cbe0} .set[data-c="5"] .mark{background:#fff;border-color:#9a9cb8} .set[data-c="5"] .time,.set[data-c="5"] .venue,.set[data-c="5"] .genre small{color:#5b5f86} .set[data-c="5"] .genre{color:#1f1fe0}
+.legend i.wdot{background:#fff;border:2px solid #9a9cb8;box-sizing:border-box}
 .set[data-c="4"]{opacity:.45} .set[data-c="4"] .artist{text-decoration:line-through}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.85rem;align-items:center}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -88,7 +90,7 @@ ol{list-style:none;margin:0;padding:0;display:grid}
     <p class="lede">Jouw eigen keuzes, met de looptijd tussen elke zaal en wat je eventueel mist. Waar je twijfelde staan de opties naast elkaar.</p>
     </div>
   </header>
-  <div class="legend"><span><b>Tik op een artiest om te markeren:</b></span><span style="--c:var(--m1)"><i></i>Must see</span><span style="--c:var(--m2)"><i></i>Graag</span><span style="--c:var(--m3)"><i></i>Als het uitkomt</span><span>doorgestreept = overslaan</span><button type="button" id="reset">Alles wissen</button></div>
+  <div class="legend"><span><b>Tik op een artiest om te markeren:</b></span><span style="--c:var(--m1)"><i></i>Must see</span><span style="--c:var(--m2)"><i></i>Graag</span><span style="--c:var(--m3)"><i></i>Als het uitkomt</span><span><i class="wdot"></i>Optie</span><span>doorgestreept = overslaan</span><button type="button" id="reset">Alles wissen</button></div>
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <div id="days"></div>
   <div class="notes">
@@ -118,15 +120,15 @@ Object.entries(DATA).forEach(([d,slots],i)=>{
 });
 let marks={};try{marks=JSON.parse(localStorage.getItem('marks')||'{}')}catch(e){}
 const save=()=>{try{localStorage.setItem('marks',JSON.stringify(marks))}catch(e){}};
-const LBL=['geen markering','Must see','Graag','Als het uitkomt','overslaan'];
+const LBL=['geen markering','Must see','Graag','Als het uitkomt','overslaan','Optie'];const ORDER=[0,1,2,3,5,4];const CODE={groen:1,oranje:2,rood:3,wit:5,overslaan:4};
 document.querySelectorAll('.set').forEach(el=>{
-  const k=el.dataset.k; if(marks[k])el.dataset.c=marks[k];
-  el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[marks[k]||0]);
-  const cyc=()=>{const c=((+marks[k]||0)+1)%5; if(c)marks[k]=c; else delete marks[k]; el.dataset.c=c||''; el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[c]); save()};
+  const k=el.dataset.k; const def=CODE[(window.MARKS||{})[el.querySelector('.artist').textContent]]||0; const cur=()=>(k in marks)?+marks[k]:def; if(cur())el.dataset.c=cur();
+  el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[cur()]);
+  const cyc=()=>{const c=ORDER[(ORDER.indexOf(cur())+1)%ORDER.length]; if(c||def)marks[k]=c; else delete marks[k]; el.dataset.c=c||''; el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[c]); save()};
   el.addEventListener('click',cyc); el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cyc()}});
 });
 const rb=document.getElementById('reset');
-rb.onclick=()=>{if(rb.dataset.sure){marks={};save();document.querySelectorAll('.set').forEach(el=>el.dataset.c='');rb.textContent='Alles wissen';delete rb.dataset.sure}else{rb.dataset.sure=1;rb.textContent='Zeker? Tik nog een keer';setTimeout(()=>{delete rb.dataset.sure;rb.textContent='Alles wissen'},3000)}};
+rb.onclick=()=>{if(rb.dataset.sure){marks={};save();location.reload();rb.textContent='Alles wissen';delete rb.dataset.sure}else{rb.dataset.sure=1;rb.textContent='Zeker? Tik nog een keer';setTimeout(()=>{delete rb.dataset.sure;rb.textContent='Alles wissen'},3000)}};
 try{const d=localStorage.getItem('eday');if(d)document.getElementById('tab'+d)?.click()}catch(e){}
 </script>
 
