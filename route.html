@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f1fe0">
+<title>Left of the Dial 2026 • Mijn route</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: één kolom, per dag een tijdlijn; keuzemomenten tonen opties naast elkaar */
+:root{
+  --bg:#f3f4fb; --surface:#ffffff; --fg:#14163a; --muted:#5b5f86; --line:#d6d9ee;
+  --accent:#1f1fe0; --accent-ink:#ffffff; --warn:#a2560a; --bad:#b4232a; --alt:#e8e9fb;
+  --m1:#1f9d55; --m1bg:#dcf5e6; --m2:#e8770e; --m2bg:#fde9d4; --m3:#d62839; --m3bg:#fde3e5;
+  --display:"Oswald","Arial Narrow",sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d0e24; --surface:#16183a; --fg:#e9eaff; --muted:#a3a7d6; --line:#2c2f63;
+  --accent:#7d7dff; --accent-ink:#0d0e24; --warn:#f0b36b; --bad:#ff8a8a; --alt:#1d2049;
+  --m1:#4fd88a; --m1bg:#133a28; --m2:#ff9d45; --m2bg:#3d2715; --m3:#ff6b78; --m3bg:#40172a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0e24; --surface:#16183a; --fg:#e9eaff; --muted:#a3a7d6; --line:#2c2f63;
+  --accent:#7d7dff; --accent-ink:#0d0e24; --warn:#f0b36b; --bad:#ff8a8a; --alt:#1d2049;
+  --m1:#4fd88a; --m1bg:#133a28; --m2:#ff9d45; --m2bg:#3d2715; --m3:#ff6b78; --m3bg:#40172a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:680px;margin:0 auto;display:grid;gap:24px}
+h1{font:700 2.4rem/1 var(--display);text-transform:uppercase;color:var(--accent);margin:0;text-wrap:balance}
+.head{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.headtxt{flex:1 1 260px;min-width:0}
+.logo{width:150px;max-width:100%;height:auto;background:#fff;padding:6px;border-radius:4px;flex:none}
+.lede{color:var(--muted);margin:8px 0 0;max-width:60ch}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:8px;z-index:2}
+.tabs button{font:500 1rem var(--display);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--accent);background:transparent;color:var(--accent);padding:6px 14px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs button:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+section h2{font:700 1.5rem var(--display);text-transform:uppercase;margin:0 0 14px}
+ol{list-style:none;margin:0;padding:0;display:grid}
+.slot{display:grid;gap:6px}
+.slot.choice{background:var(--alt);padding:10px;gap:8px}
+.slot .tag{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.opts{display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.set{display:grid;gap:2px;background:var(--surface);border-left:4px solid var(--accent);padding:10px 14px;min-width:0}
+.slot.choice .set{border-left-style:dashed}
+.time{font:500 .9rem var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.artist{font-weight:600;font-size:1.05rem}
+.venue{color:var(--muted);font-size:.9rem}
+.genre{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.genre small{font:400 .78rem var(--body);text-transform:none;letter-spacing:0;color:var(--muted)}
+.note{font-size:.82rem;color:var(--warn)}
+.note.bad{color:var(--bad)}
+.walk{font:500 .8rem var(--mono);color:var(--muted);padding:6px 0 6px 14px}
+.walk.lose{color:var(--warn)} .walk.bad{color:var(--bad)}
+.set{cursor:pointer;position:relative;padding-right:40px;transition:background .15s}
+.set:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.set .mark{position:absolute;top:10px;right:12px;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);background:transparent}
+.set[data-c="1"]{border-left-color:var(--m1);background:var(--m1bg)} .set[data-c="1"] .mark{background:var(--m1);border-color:var(--m1)}
+.set[data-c="2"]{border-left-color:var(--m2);background:var(--m2bg)} .set[data-c="2"] .mark{background:var(--m2);border-color:var(--m2)}
+.set[data-c="3"]{border-left-color:var(--m3);background:var(--m3bg)} .set[data-c="3"] .mark{background:var(--m3);border-color:var(--m3)}
+.set[data-c="4"]{opacity:.45} .set[data-c="4"] .artist{text-decoration:line-through}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.85rem;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:50%;background:var(--c);display:inline-block}
+.legend button{font:inherit;font-size:.8rem;background:none;border:1px solid var(--line);color:var(--muted);padding:2px 8px;cursor:pointer}
+.notes{border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:.88rem;display:grid;gap:6px}
+.notes p{margin:0}
+.back{color:var(--accent);font-weight:600;text-decoration:none;font-size:.9rem}
+.back:hover{text-decoration:underline}
+@media print{.back{display:none}}
+@media print{
+  .set,.slot,.slot.choice,.opts,li{break-inside:avoid;page-break-inside:avoid}
+  .walk,section h2,.slot .tag{break-after:avoid;page-break-after:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <a class="back" href="./">← Kaart met alle zalen</a>
+  <header class="head">
+    <img class="logo" alt="Left of the Dial" src="logo.jpg">
+    <div class="headtxt">
+    <h1>Left of the Dial · eigen route</h1>
+    <p class="lede">Jouw eigen keuzes, met de looptijd tussen elke zaal en wat je eventueel mist. Waar je twijfelde staan de opties naast elkaar.</p>
+    </div>
+  </header>
+  <div class="legend"><span><b>Tik op een artiest om te markeren:</b></span><span style="--c:var(--m1)"><i></i>Must see</span><span style="--c:var(--m2)"><i></i>Graag</span><span style="--c:var(--m3)"><i></i>Als het uitkomt</span><span>doorgestreept = overslaan</span><button type="button" id="reset">Alles wissen</button></div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <div id="days"></div>
+  <div class="notes">
+    <p>Oranje = je mist een stukje van een set of moet eerder weg. Rood = meer dan 15 minuten lopen.</p>
+    <p>Genres zijn samengevat uit de omschrijvingen van het festival. “Klinkt als” komt van de “For fans of”-regel op de bandpagina’s van leftofthedial.nl.</p>
+    <p>Looptijden zijn schattingen. Eindtijden van Mindsigh (vrijdag), Babe Haven en Tooth ken ik niet precies; ik ga uit van 40 minuten.</p>
+  </div>
+</div>
+
+<script src="route-data.js"></script>
+<script>
+// slot: {walk:"tekst", cls:"", sets:[[tijd, artiest, zaal, noot, noot-klasse]], choice:bool}
+const DATA=window.DATA,GENRE=window.GENRE,LIKE=window.LIKE;
+const tabs=document.getElementById('tabs'),days=document.getElementById('days');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+Object.entries(DATA).forEach(([d,slots],i)=>{
+  const b=document.createElement('button');b.textContent=d.split(' ')[0];b.id='tab'+i;b.setAttribute('role','tab');b.setAttribute('aria-selected',i===0);tabs.appendChild(b);
+  const s=document.createElement('section');s.id='day'+i;s.hidden=i!==0;
+  let h=`<h2>${d}</h2><ol>`;
+  slots.forEach(sl=>{
+    if(sl.walk)h+=`<li class="walk ${sl.cls||''}">↓ ${esc(sl.walk)}</li>`;
+    const cards=sl.sets.map(([t,a,v,n,nc])=>`<div class="set" tabindex="0" role="button" data-k="${esc(d+'|'+a)}"><span class="mark" aria-hidden="true"></span><span class="time">${t}</span><span class="artist">${esc(a)}</span>${GENRE[a]?`<span class="genre">${esc(GENRE[a])}${LIKE[a]?` <small>· klinkt als ${esc(LIKE[a])}</small>`:''}</span>`:''}<span class="venue">${esc(v)}</span>${n?`<span class="note ${nc||''}">${esc(n)}</span>`:''}</div>`).join('');
+    h+=sl.choice?`<li class="slot choice"><span class="tag">${sl.tag}</span><div class="opts">${cards}</div></li>`:`<li class="slot">${cards}</li>`;
+  });
+  s.innerHTML=h+'</ol>';days.appendChild(s);
+  b.onclick=()=>{[...tabs.children].forEach((t,j)=>{t.setAttribute('aria-selected',j===i);document.getElementById('day'+j).hidden=j!==i});try{localStorage.setItem('eday',i)}catch(e){}};
+});
+let marks={};try{marks=JSON.parse(localStorage.getItem('marks')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('marks',JSON.stringify(marks))}catch(e){}};
+const LBL=['geen markering','Must see','Graag','Als het uitkomt','overslaan'];
+document.querySelectorAll('.set').forEach(el=>{
+  const k=el.dataset.k; if(marks[k])el.dataset.c=marks[k];
+  el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[marks[k]||0]);
+  const cyc=()=>{const c=((+marks[k]||0)+1)%5; if(c)marks[k]=c; else delete marks[k]; el.dataset.c=c||''; el.setAttribute('aria-label',el.querySelector('.artist').textContent+': '+LBL[c]); save()};
+  el.addEventListener('click',cyc); el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();cyc()}});
+});
+const rb=document.getElementById('reset');
+rb.onclick=()=>{if(rb.dataset.sure){marks={};save();document.querySelectorAll('.set').forEach(el=>el.dataset.c='');rb.textContent='Alles wissen';delete rb.dataset.sure}else{rb.dataset.sure=1;rb.textContent='Zeker? Tik nog een keer';setTimeout(()=>{delete rb.dataset.sure;rb.textContent='Alles wissen'},3000)}};
+try{const d=localStorage.getItem('eday');if(d)document.getElementById('tab'+d)?.click()}catch(e){}
+</script>
+
+</body>
+</html>
