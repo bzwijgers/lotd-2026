@@ -46,3 +46,6 @@ window.MARKS={"Do|Nina Winder-Lind": "groen", "Do|La Flemme": "groen", "Do|Dauf√
 
 // Zalen: [naam, adres, podia (gescheiden door "; ")]. Gebruikt door de kaart en Mijn route.
 window.PLACES=[["Annabel","Schiestraat 20","Annabel Down; Annabel Up"],["Arminius","Westersingel 76, 3015 LB","Arminius Down; Arminius Up"],["Baanhof","Baan 159","Baanhof"],["Barrio","Schiekade 201","Barrio"],["BIRD","Raampoortstraat 24","BIRD"],["De Doelen","Schouwburgplein 50","De Doelen Up; De Doelen WBH"],["MONO","Vijverhofstraat 15","MONO"],["Paradijskerk","Nieuwe Binnenweg 25","Paradijskerk"],["Reijngoud","Vijverhofstraat 10","Reijngoud"],["Remastered","Willemsplein 79","Remastered"],["Rotown","Nieuwe Binnenweg 19","Rotown"],["Sahara","Schiestraat 18","Sahara"],["Salsability","Delftsestraat 9A","Salsability"],["Stalles (ingang oude Club Centraal)","Westersingel 50A, 3014 GV","Stalles"],["Theater Rotterdam","Schouwburgplein 25","TR Down; TR Foyer; TR Up"],["Uniek","Mauritsweg 34","Uniek"],["V11","Wijnhaven 101","V11"],["V2_","Eendrachtsstraat 10, 3012 BN","V2_"],["Waalse Kerk","Pierre Baylestraat 1","Waalse Kerk"],["WORM","Boomgaardsstraat 71","WORM 1; WORM 2"],["Ticketbalie","Eendrachtsplein","Polsbandjes"]];
+
+// Laatste metro vanaf Beurs richting Capelsebrug per dag, bijv. "00:11". Leeg = nog niet ingevuld.
+window.LASTMETRO={"Donderdag":"","Vrijdag":"","Zaterdag":""};

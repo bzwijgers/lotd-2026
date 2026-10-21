@@ -77,6 +77,7 @@ dialog::backdrop{background:#000a}
 .row a,.row button{display:flex;align-items:center;justify-content:center;height:50px;border-radius:12px;border:0;font-weight:800;font-size:16px;text-decoration:none;cursor:pointer}
 .row a{background:var(--accent);color:var(--accent-ink)}
 .row button{background:#2e3540;color:#fff}
+.clash{font-size:14px;font-weight:700;color:#ff8a8a;margin-top:2px}.info{display:flex;align-items:center;gap:10px;background:#222a35;border-radius:12px;padding:10px 10px 10px 14px;margin:0 0 12px}.info div{flex:1;min-width:0}.info b{font-size:16px}.info p{margin:2px 0 0;font-size:14px;color:var(--muted)}.info a{flex:none;display:flex;align-items:center;justify-content:center;min-width:76px;height:48px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:800;text-decoration:none;padding:0 10px}.info.metro{margin:16px 0 0}
 @media print{.top{position:static;box-shadow:none}.tools,.notes button{display:none}.set,.choice,li{break-inside:avoid}}
 </style>
 </head>
@@ -140,19 +141,27 @@ function card(day,x){const [tm,a,v,n,nc]=x;const c=markOf(day,a);const [st,en]=t
  return '<div class="set'+(isNow?' is-now':'')+'" role="button" tabindex="0" data-day="'+esc(day)+'" data-a="'+esc(a)+'" data-v="'+esc(v)+'" data-t="'+esc(tm)+'" data-c="'+c+'"><span class="dot" aria-hidden="true"></span>'+
  '<span class="time">'+esc(tm)+(isNow?'<span class="now">NU</span>':'')+'</span><span class="artist">'+esc(a)+'</span>'+
  (GENRE[a]?'<span class="genre">'+esc(GENRE[a])+'</span>':'')+(LIKE[a]?'<span class="like">klinkt als '+esc(LIKE[a])+'</span>':'')+
- '<span class="venue">📍 '+esc(v)+'</span>'+(n?'<span class="note '+(nc||'')+'">'+esc(n)+'</span>':'')+'</div>'}
+ '<span class="venue">📍 '+esc(v)+'</span>'+(CONF[a]?'<span class="clash">⚠ Botst met '+esc(CONF[a].join(', '))+'</span>':'')+(n?'<span class="note '+(nc||'')+'">'+esc(n)+'</span>':'')+'</div>'}
 
-let firstRender=true;
+let firstRender=true;let CONF={};
+const TB="https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+encodeURIComponent("Eendrachtsplein, Rotterdam");
+const METRO="https://www.google.com/maps/dir/?api=1&travelmode=transit&origin="+encodeURIComponent("Metrostation Beurs, Rotterdam")+"&destination="+encodeURIComponent("Metrostation Capelsebrug, Capelle aan den IJssel");
+function dayInfo(day,where){const d=day.split(" ")[0];const LM=(window.LASTMETRO||{})[d];
+ if(where==='top'&&d==='Donderdag')return '<div class="info"><div><b>🎟 Eerst je polsbandje ophalen</b><p>Ticketbalie Eendrachtsplein, donderdag 17:00–22:00. Tussen 18:00 en 19:00 is het het drukst.</p></div><a href="'+TB+'" target="_blank" rel="noopener">🚶 Route</a></div>';
+ if(where==='end')return '<div class="info metro"><div><b>🚇 Laatste metro Beurs → Capelsebrug'+(LM?': '+esc(LM):'')+'</b><p>'+(LM?'Zorg dat je op tijd bij Beurs bent.':'Check de tijd in de RET-app; geef hem door, dan zet ik hem erin.')+'</p></div><a href="'+METRO+'" target="_blank" rel="noopener">Tijden</a></div>';
+ return ''}
+function conflicts(day){const all=[];DATA[day].forEach((sl,si)=>sl.sets.forEach(x=>{if(markOf(day,x[1])===4)return;const [st,en]=times(day,x[0]);all.push({si,a:x[1],st,en,choice:!!sl.choice})}));const out={};
+ for(const p of all){const hits=all.filter(q=>q!==p&&q.si!==p.si&&p.st<q.en&&q.st<p.en).map(q=>{const m=Math.round((Math.min(p.en,q.en)-Math.max(p.st,q.st))/6e4);return q.a+" ("+m+" min)"});if(hits.length)out[p.a]=hits}return out}
 function render(){
  $("days").innerHTML=DAYS.map((d,i)=>'<button type="button" role="tab" aria-selected="'+(i===cur)+'" data-i="'+i+'">'+(SHORT[d.split(" ")[0]]||d)+'</button>').join("");
  $("onlyGreen").setAttribute("aria-pressed",onlyGreen);
- const day=DAYS[cur];let h='<ol>';let shown=0;
+ const day=DAYS[cur];CONF=conflicts(day);let h=dayInfo(day,'top')+'<ol>';let shown=0;
  for(const sl of DATA[day]){
   const sets=sl.sets.filter(x=>!onlyGreen||markOf(day,x[1])===1);if(!sets.length)continue;
   if(sl.walk&&shown)h+='<li class="walk '+(sl.cls||'')+'">↓ '+esc(sl.walk)+'</li>';
   h+=sl.choice&&sets.length>1?'<li class="choice"><span class="tag">'+esc(sl.tag||"Kies één")+'</span>'+sets.map(x=>card(day,x)).join("")+'</li>':'<li>'+sets.map(x=>card(day,x)).join("")+'</li>';
   shown++}
- h+='</ol>';if(!shown)h='<p class="empty">Geen groene acts op deze dag.</p>';
+ h+='</ol>'+dayInfo(day,'end');if(!shown)h='<p class="empty">Geen groene acts op deze dag.</p>'+dayInfo(day,'end');
  $("list").innerHTML=h;
  if(firstRender){firstRender=false;const n=document.querySelector(".set.is-now");if(n&&todayIndex()===cur)n.scrollIntoView({block:"center"})}
 }

@@ -101,6 +101,9 @@ function renderNowBar(){const bar=$("nowbar");const now=new Date();const sets=al
   const lbl=soon?(curr.length?'Straks':'Volgende'):'Eerste act';const dayTxt=soon?'':n.day.split(" ")[0]+' ';
   h+='<span class="l">'+lbl+'</span><span class="m">'+esc(dayTxt+hm(n.st))+' · '+esc(n.x[1])+'</span><span class="s">'+esc(n.x[2])+(leave&&soon&&leave>now?' · <strong>vertrek '+hm(leave)+'</strong>':'')+(nxt.length>1&&nxt[1].st-n.st<15*60000?' · of '+esc(nxt[1].x[1]):'')+'</span></div>'+(p?'<a href="'+route(p)+'" target="_blank" rel="noopener" aria-label="Wandelroute naar '+esc(p.name)+'">🚶</a>':'');
   bar.dataset.pid=p?p.id:""}else{h+='</div>';bar.dataset.pid=""}
+ if(n&&(n.st-now)>=0&&n===sets.reduce((a,b)=>a.st<b.st?a:b))h=h.replace('</span></div>',' · eerst polsbandje halen (Eendrachtsplein)</span></div>');
+ const LM=window.LASTMETRO||{};const dk=(()=>{const d=new Date(now);if(d.getHours()<6)d.setDate(d.getDate()-1);return {22:"Donderdag",23:"Vrijdag",24:"Zaterdag"}[d.getDate()]})();
+ if(dk&&LM[dk]){const [hh,mm]=LM[dk].split(":").map(Number);const t=new Date(now);if(now.getHours()>=6&&hh<6)t.setDate(t.getDate()+1);t.setHours(hh,mm,0,0);const left=(t-now)/6e4;if(left>0&&left<=75)h=h.replace('<div class="nb">','<div class="nb"><span class="l" style="color:#ff8a8a">Laatste metro Beurs '+LM[dk]+' · nog '+Math.round(left)+' min</span>')}
  bar.innerHTML=h;bar.hidden=false}
 $("nowbar").addEventListener("click",e=>{if(e.target.closest("a"))return;const id=$("nowbar").dataset.pid;if(id)showVenue(places[Number(id)-1])});
 renderNowBar();setInterval(renderNowBar,60000);
