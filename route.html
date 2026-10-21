@@ -145,10 +145,9 @@ function card(day,x){const [tm,a,v,n,nc]=x;const c=markOf(day,a);const [st,en]=t
 
 let firstRender=true;let CONF={};
 const TB="https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+encodeURIComponent("Eendrachtsplein, Rotterdam");
-const METRO="https://www.google.com/maps/dir/?api=1&travelmode=transit&origin="+encodeURIComponent("Metrostation Beurs, Rotterdam")+"&destination="+encodeURIComponent("Metrostation Capelsebrug, Capelle aan den IJssel");
-function dayInfo(day,where){const d=day.split(" ")[0];const LM=(window.LASTMETRO||{})[d];
+function dayInfo(day,where){const d=day.split(" ")[0];
  if(where==='top'&&d==='Donderdag')return '<div class="info"><div><b>🎟 Eerst je polsbandje ophalen</b><p>Ticketbalie Eendrachtsplein, donderdag 17:00–22:00. Tussen 18:00 en 19:00 is het het drukst.</p></div><a href="'+TB+'" target="_blank" rel="noopener">🚶 Route</a></div>';
- if(where==='end')return '<div class="info metro"><div><b>🚇 Laatste metro Beurs → Capelsebrug'+(LM?': '+esc(LM):'')+'</b><p>'+(LM?'Zorg dat je op tijd bij Beurs bent.':'Check de tijd in de RET-app; geef hem door, dan zet ik hem erin.')+'</p></div><a href="'+METRO+'" target="_blank" rel="noopener">Tijden</a></div>';
+
  return ''}
 function conflicts(day){const all=[];DATA[day].forEach((sl,si)=>sl.sets.forEach(x=>{if(markOf(day,x[1])===4)return;const [st,en]=times(day,x[0]);all.push({si,a:x[1],st,en,choice:!!sl.choice})}));const out={};
  for(const p of all){const hits=all.filter(q=>q!==p&&q.si!==p.si&&p.st<q.en&&q.st<p.en).map(q=>{const m=Math.round((Math.min(p.en,q.en)-Math.max(p.st,q.st))/6e4);return q.a+" ("+m+" min)"});if(hits.length)out[p.a]=hits}return out}
@@ -161,7 +160,7 @@ function render(){
   if(sl.walk&&shown)h+='<li class="walk '+(sl.cls||'')+'">↓ '+esc(sl.walk)+'</li>';
   h+=sl.choice&&sets.length>1?'<li class="choice"><span class="tag">'+esc(sl.tag||"Kies één")+'</span>'+sets.map(x=>card(day,x)).join("")+'</li>':'<li>'+sets.map(x=>card(day,x)).join("")+'</li>';
   shown++}
- h+='</ol>'+dayInfo(day,'end');if(!shown)h='<p class="empty">Geen groene acts op deze dag.</p>'+dayInfo(day,'end');
+ h+='</ol>'+'';if(!shown)h='<p class="empty">Geen groene acts op deze dag.</p>';
  $("list").innerHTML=h;
  if(firstRender){firstRender=false;const n=document.querySelector(".set.is-now");if(n&&todayIndex()===cur)n.scrollIntoView({block:"center"})}
 }
