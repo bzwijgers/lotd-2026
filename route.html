@@ -92,6 +92,8 @@ button.art{background:none;border:0;padding:0;color:#fff;font-weight:800;font-si
 .else{list-style:none;margin:0;padding:0}.else li{display:grid;grid-template-columns:auto 1fr;column-gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}.else li span{color:#ff9d85;font-weight:700;font-variant-numeric:tabular-nums}.else li small{grid-column:2;color:var(--muted);font-size:13px}.else em{color:var(--m1);font-style:normal;font-size:13px}
 .pause{font-size:14px;color:#9fd3ff;padding:8px 0 8px 16px;font-weight:700}
 .pnote{font-size:14px;color:#ffe08a;margin-top:2px}
+.pchoice{display:grid;gap:6px;margin-top:12px}.cbtn{height:48px;border-radius:12px;border:0;background:#2e3540;color:#fff;font-weight:800;font-size:16px;cursor:pointer}.cbtn.main{background:var(--m1);color:#0b2416}.chint{font-size:13px;color:var(--dim);text-align:center}
+.addbtn{grid-column:2;justify-self:start;margin-top:4px;height:36px;padding:0 12px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:14px;cursor:pointer}.else em.ok{color:var(--m1);font-style:normal;font-size:13px;margin-left:6px}
 @media print{.top{position:static;box-shadow:none}.tools,.notes button{display:none}.set,.choice,li{break-inside:avoid}}
 </style>
 </head>
@@ -119,6 +121,7 @@ button.art{background:none;border:0;padding:0;color:#fff;font-weight:800;font-si
   <h2 id="pName"></h2><p class="sub" id="pSub"></p>
   <div id="pBio" class="bio"></div>
   <div class="listen"><a id="pSpot" target="_blank" rel="noopener">▶ Spotify</a><a id="pYt" target="_blank" rel="noopener">▶ YouTube</a></div>
+  <div id="pChoice" class="pchoice"></div>
   <p class="lbl">Jouw kleur</p>
   <div class="opts" id="pOpts"></div>
   <p class="lbl">Notitie</p>
@@ -137,6 +140,7 @@ button.art{background:none;border:0;padding:0;color:#fff;font-weight:800;font-si
 
 <script src="route-data.js"></script>
 <script src="all-acts.js"></script>
+<script src="extras.js"></script>
 <script>
 "use strict";
 const DATA=window.DATA||{},GENRE=window.GENRE||{},LIKE=window.LIKE||{};
@@ -204,10 +208,15 @@ $("onlyGreen").onclick=()=>{onlyGreen=!onlyGreen;try{localStorage.setItem("onlyG
 
 // kleurkiezer
 let pickKey=null;
-function openPick(el){const day=el.dataset.day,a=el.dataset.a;pickKey=[day,a];$("pSpot").href="https://open.spotify.com/search/"+encodeURIComponent(a);$("pYt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(a+" band live");
+function openPick(el){const day=el.dataset.day,a=el.dataset.a;pickKey=[day,a];{const sl=DATA[day].find(z=>z.sets.some(x=>x[1]===a));let h="";
+  if(sl&&sl.choice&&sl.sets.length>1){const others=sl.sets.filter(x=>x[1]!==a);const chosen=others.every(x=>markOf(day,x[1])===4)&&markOf(day,a)!==4;
+   h+=chosen?'<button type="button" class="cbtn" data-act="unchoose">↺ Alle opties weer tonen</button>':'<button type="button" class="cbtn main" data-act="choose">✓ Deze kies ik</button><span class="chint">De andere opties gaan op overslaan</span>'}
+  if(sl&&sl.extra)h+='<button type="button" class="cbtn" data-act="remove">✕ Uit mijn route halen</button>';
+  $("pChoice").innerHTML=h}
+$("pSpot").href="https://open.spotify.com/search/"+encodeURIComponent(a);$("pYt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(a+" band live");
  $("pNote").value=NOTES[day+"|"+a]||"";
  {const [st,en]=times(day,el.dataset.t);const others=((window.ALL||{})[day.split(" ")[0]]||[]).filter(r=>r[2]!==a).map(r=>{const [s2,e2]=times(day,r[0]+"–"+r[1]);return {r,s2,e2,w:walkMin(el.dataset.v,r[3])}}).filter(o=>o.s2<en&&o.e2>st).sort((x,y)=>(x.w??99)-(y.w??99)||x.s2-y.s2).slice(0,8);
-  $("pElse").innerHTML=others.length?others.map(o=>'<li><span>'+esc(o.r[0]+"–"+o.r[1])+'</span><b>'+esc(o.r[2])+'</b>'+(inRoute(day,o.r[2])?' <em>in je route</em>':'')+'<small>'+esc(o.r[3])+(o.w!=null?' · '+o.w+' min lopen':'')+'</small></li>').join(""):'<li><em>Niets anders rond deze tijd.</em></li>'}
+  $("pElse").innerHTML=others.length?others.map(o=>'<li><span>'+esc(o.r[0]+"–"+o.r[1])+'</span><b>'+esc(o.r[2])+'</b>'+(inRoute(day,o.r[2])?'<em class="ok">✓ in je route</em>':'<button type="button" class="addbtn" data-day="'+esc(day)+'" data-t="'+esc(o.r[0]+"–"+o.r[1])+'" data-a="'+esc(o.r[2])+'" data-v="'+esc(o.r[3])+'">+ Toevoegen</button>')+'<small>'+esc(o.r[3])+(o.w!=null?' · '+o.w+' min lopen':'')+'</small></li>').join(""):'<li><em>Niets anders rond deze tijd.</em></li>'}
 $("pName").textContent=a+((window.FROM||{})[a]?" "+FROM[a]:"");const u=(window.ACTURL||{})[a];$("pBio").innerHTML=((window.BIO||{})[a]?"<p>"+esc(BIO[a])+"</p>":"")+(LIKE[a]?"<p class=\"lk\">Klinkt als "+esc(LIKE[a])+"</p>":"")+(u?"<a href=\"https://leftofthedial.nl/acts/"+u+"/\" target=\"_blank\" rel=\"noopener\">Meer op leftofthedial.nl ›</a>":"");$("pSub").textContent=day.split(" ")[0]+" "+el.dataset.t+" · "+el.dataset.v;$("pWalk").href=walkUrl(el.dataset.v);
  const c=markOf(day,a);$("pOpts").innerHTML=COLORS.map(([k,l,col])=>'<button type="button" data-k="'+k+'" aria-pressed="'+(k===c)+'"><i style="background:'+col+(k===4?';border-style:dashed':'')+'"></i>'+l+'</button>').join("");$("pick").showModal()}
 $("list").addEventListener("click",e=>{const v=e.target.closest(".venue[data-venue]");if(v){openVenue(v.dataset.venue);return}const el=e.target.closest(".set");if(el)openPick(el)});
@@ -225,6 +234,11 @@ $("pClose").onclick=()=>$("pick").close();$("pNote").addEventListener("input",()
 $("pick").addEventListener("click",e=>{if(e.target===$("pick"))$("pick").close()});
 const rb=$("reset");rb.onclick=()=>{if(rb.dataset.sure){marks={};save();delete rb.dataset.sure;rb.textContent="Mijn kleuren wissen";render()}else{rb.dataset.sure=1;rb.textContent="Zeker? Tik nog een keer";setTimeout(()=>{delete rb.dataset.sure;rb.textContent="Mijn kleuren wissen"},3000)}};
 
+$("pChoice").addEventListener("click",e=>{const b=e.target.closest("button[data-act]");if(!b||!pickKey)return;const [day,a]=pickKey;const sl=DATA[day].find(z=>z.sets.some(x=>x[1]===a));const act=b.dataset.act;
+ if(act==="choose"){sl.sets.forEach(x=>{const k=day+"|"+x[1];if(x[1]===a){const c=markOf(day,a);if(c===0||c===4||c===5)marks[k]=1}else marks[k]=4});save();$("pick").close();render()}
+ else if(act==="unchoose"){sl.sets.forEach(x=>{const k=day+"|"+x[1];if(x[1]!==a&&markOf(day,x[1])===4){if(defMark(day,x[1])===4)marks[k]=0;else delete marks[k]}});save();$("pick").close();render()}
+ else if(act==="remove"){window.EXTRA&&EXTRA.remove(day,a);location.reload()}});
+$("pElse").addEventListener("click",e=>{const b=e.target.closest(".addbtn");if(!b||!window.EXTRA)return;EXTRA.add(b.dataset.day,b.dataset.t,b.dataset.a,b.dataset.v);b.outerHTML='<em class="ok">✓ toegevoegd</em>';setTimeout(()=>location.reload(),600)});
 render();setInterval(()=>{if(!$("pick").open)render()},60000);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
