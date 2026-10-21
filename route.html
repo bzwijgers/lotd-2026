@@ -86,6 +86,7 @@ dialog::backdrop{background:#000a}
 .vinfo{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:4px 0 0;font-size:15px}.vinfo dt{color:var(--dim)}.vinfo dd{margin:0}
 .vacts{list-style:none;margin:0;padding:0}.vacts li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:16px;flex-wrap:wrap}.vacts li i{width:12px;height:12px;border-radius:50%;border:1px solid #5a6573;flex:none}.vacts li span{color:#ff9d85;font-weight:700;font-variant-numeric:tabular-nums}.vacts em{color:var(--muted);font-style:normal;font-size:14px}
 .vmap{display:block;text-align:center;color:var(--muted);font-size:14px;margin-top:12px}
+button.art{background:none;border:0;padding:0;color:#fff;font-weight:800;font-size:16px;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:#5a6573;text-underline-offset:3px}
 @media print{.top{position:static;box-shadow:none}.tools,.notes button{display:none}.set,.choice,li{break-inside:avoid}}
 </style>
 </head>
@@ -191,11 +192,11 @@ function openPick(el){const day=el.dataset.day,a=el.dataset.a;pickKey=[day,a];$(
 $("list").addEventListener("click",e=>{const v=e.target.closest(".venue[data-venue]");if(v){openVenue(v.dataset.venue);return}const el=e.target.closest(".set");if(el)openPick(el)});
 function openVenue(stage){const p=placeOf(stage);const name=p?p.name:stage;const info=(window.VENUEINFO||{})[name]||["",""];$("vName").textContent=name;$("vType").textContent=info[0];
  $("vAddr").textContent=p?p.address:"—";$("vStages").textContent=p?p.stages.map(x=>x.replace(/\b\w/g,c=>c.toUpperCase()).replace(/^Tr /,"TR ").replace(/^Worm/,"WORM").replace(/^Bird/,"BIRD").replace(/^Mono/,"MONO").replace(/^V2_/,"V2_")).join(", "):stage;$("vAcc").textContent=info[1]||"—";
- const acts=[];for(const d of DAYS)for(const sl of DATA[d])for(const x of sl.sets){const q=placeOf(x[2]);if(q&&p&&q.name===p.name)acts.push([d.split(" ")[0],x[0],x[1],x[2],!!sl.choice,markOf(d,x[1])])}
+ const acts=[];for(const d of DAYS)for(const sl of DATA[d])for(const x of sl.sets){const q=placeOf(x[2]);if(q&&p&&q.name===p.name)acts.push([d.split(" ")[0],x[0],x[1],x[2],!!sl.choice,markOf(d,x[1]),d])}
  const COL={1:"var(--m1)",2:"var(--m2)",3:"var(--m3)",5:"var(--m5)"};
- $("vActs").innerHTML=acts.length?acts.map(a=>'<li><i style="background:'+(COL[a[5]]||"transparent")+'"></i><span>'+esc(a[0].slice(0,2))+' '+esc(a[1])+'</span><b>'+esc(a[2])+'</b>'+(a[4]?' <em>optie</em>':'')+(p&&p.stages.length>1?' <em>· '+esc(a[3])+'</em>':'')+'</li>').join(""):'<li><em>Geen acts uit je route.</em></li>';
+ $("vActs").innerHTML=acts.length?acts.map(a=>'<li><i style="background:'+(COL[a[5]]||"transparent")+'"></i><span>'+esc(a[0].slice(0,2))+' '+esc(a[1])+'</span><button type="button" class="art" data-day="'+esc(a[6])+'" data-a="'+esc(a[2])+'" data-t="'+esc(a[1])+'" data-v="'+esc(a[3])+'">'+esc(a[2])+' ›</button>'+(a[4]?' <em>optie</em>':'')+(p&&p.stages.length>1?' <em>· '+esc(a[3])+'</em>':'')+'</li>').join(""):'<li><em>Geen acts uit je route.</em></li>';
  $("vWalk").href=walkUrl(stage);$("vMap").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(p?p.address:stage+", Rotterdam");if($("pick").open)$("pick").close();$("ven").showModal()}
-$("vClose").onclick=()=>$("ven").close();$("ven").addEventListener("click",e=>{if(e.target===$("ven"))$("ven").close()});
+$("vClose").onclick=()=>$("ven").close();$("vActs").addEventListener("click",e=>{const b=e.target.closest("button.art");if(!b)return;$("ven").close();openPick(b)});$("ven").addEventListener("click",e=>{if(e.target===$("ven"))$("ven").close()});
 $("list").addEventListener("keydown",e=>{const el=e.target.closest(".set");if(el&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openPick(el)}});
 $("pOpts").onclick=e=>{const b=e.target.closest("button[data-k]");if(!b||!pickKey)return;const k=+b.dataset.k,[day,a]=pickKey,key=day+"|"+a;
  if(k===defMark(day,a))delete marks[key];else marks[key]=k;save();$("pick").close();render()};
