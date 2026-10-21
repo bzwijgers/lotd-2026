@@ -94,6 +94,7 @@ button.art{background:none;border:0;padding:0;color:#fff;font-weight:800;font-si
 .pnote{font-size:14px;color:#ffe08a;margin-top:2px}
 .pchoice{display:grid;gap:6px;margin-top:12px}.cbtn{height:48px;border-radius:12px;border:0;background:#2e3540;color:#fff;font-weight:800;font-size:16px;cursor:pointer}.cbtn.main{background:var(--m1);color:#0b2416}.chint{font-size:13px;color:var(--dim);text-align:center}
 .addbtn{grid-column:2;justify-self:start;margin-top:4px;height:36px;padding:0 12px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:14px;cursor:pointer}.else em.ok{color:var(--m1);font-style:normal;font-size:13px;margin-left:6px}
+.wx{display:flex;align-items:center;gap:12px;background:#1d2a38;border-radius:12px;padding:10px 12px;margin:0 0 12px;color:#fff;text-decoration:none}.wx .wi{font-size:26px}.wx .wtx{flex:1;min-width:0;display:grid}.wx b{font-size:15px}.wx small{font-size:13px;color:var(--muted)}.wx .wgo{font-size:22px;color:var(--muted)}
 @media print{.top{position:static;box-shadow:none}.tools,.notes button{display:none}.set,.choice,li{break-inside:avoid}}
 </style>
 </head>
@@ -141,6 +142,7 @@ button.art{background:none;border:0;padding:0;color:#fff;font-weight:800;font-si
 <script src="route-data.js"></script>
 <script src="all-acts.js"></script>
 <script src="extras.js"></script>
+<script src="weather.js"></script>
 <script>
 "use strict";
 const DATA=window.DATA||{},GENRE=window.GENRE||{},LIKE=window.LIKE||{};
@@ -181,12 +183,14 @@ const saveNotes=()=>{try{localStorage.setItem("notes",JSON.stringify(NOTES))}cat
 function walkMin(s1,s2){const C=window.COORDS||{};const a=placeOf(s1),b=placeOf(s2);if(!a||!b)return null;if(a.name===b.name)return 2;const p=C[a.name],q=C[b.name];if(!p||!q)return null;const R=6371,dl=(q[0]-p[0])*Math.PI/180,dn=(q[1]-p[1])*Math.PI/180,x=Math.sin(dl/2)**2+Math.cos(p[0]*Math.PI/180)*Math.cos(q[0]*Math.PI/180)*Math.sin(dn/2)**2;const km=2*R*Math.asin(Math.sqrt(x))*1.3;return Math.max(3,Math.round(km/5*60))}
 const inRoute=(day,a)=>DATA[day].some(sl=>sl.sets.some(x=>x[1]===a));
 function slotSpan(day,sl){const xs=sl.sets.filter(x=>markOf(day,x[1])!==4);if(!xs.length)return null;const ts=xs.map(x=>times(day,x[0]));return [new Date(Math.min(...ts.map(t=>t[0]))),new Date(Math.max(...ts.map(t=>t[1])))]}
+let WXDATA=null;
 let firstRender=true;let CONF={};
 const TB="https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+encodeURIComponent("Eendrachtsplein, Rotterdam");
-function dayInfo(day,where){const d=day.split(" ")[0];
- if(where==='top'&&d==='Donderdag')return '<div class="info"><div><b>🎟 Eerst je polsbandje ophalen</b><p>Ticketbalie Eendrachtsplein, donderdag 17:00–22:00. Tussen 18:00 en 19:00 is het het drukst.</p></div><a href="'+TB+'" target="_blank" rel="noopener">🚶 Route</a></div>';
+function dayInfo(day,where){const d=day.split(" ")[0];let wxh="";if(where==='top'){const w=window.WX&&WXDATA?WX.evening(WXDATA,DATE[d]):null;wxh='<a class="wx" href="'+(window.BUIENRADAR||"#")+'" target="_blank" rel="noopener"><span class="wi">'+(w?w.icon:"🌦")+'</span><span class="wtx"><b>'+d+'avond'+(w?': '+esc(w.text):'')+'</b><small>'+(w?'Tik voor Buienradar':'Weer nog niet bekend · tik voor Buienradar')+'</small></span><span class="wgo">›</span></a>'}
+ 
+ if(where==='top'&&d==='Donderdag')return wxh+'<div class="info"><div><b>🎟 Eerst je polsbandje ophalen</b><p>Ticketbalie Eendrachtsplein, donderdag 17:00–22:00. Tussen 18:00 en 19:00 is het het drukst.</p></div><a href="'+TB+'" target="_blank" rel="noopener">🚶 Route</a></div>';
 
- return ''}
+ return wxh}
 function conflicts(day){const all=[];DATA[day].forEach((sl,si)=>sl.sets.forEach(x=>{if(markOf(day,x[1])===4)return;const [st,en]=times(day,x[0]);all.push({si,a:x[1],st,en,choice:!!sl.choice})}));const out={};
  for(const p of all){const hits=all.filter(q=>q!==p&&q.si!==p.si&&p.st<q.en&&q.st<p.en).map(q=>{const m=Math.round((Math.min(p.en,q.en)-Math.max(p.st,q.st))/6e4);return q.a+" ("+m+" min)"});if(hits.length)out[p.a]=hits}return out}
 function render(){
@@ -239,6 +243,7 @@ $("pChoice").addEventListener("click",e=>{const b=e.target.closest("button[data-
  else if(act==="unchoose"){sl.sets.forEach(x=>{const k=day+"|"+x[1];if(x[1]!==a&&markOf(day,x[1])===4){if(defMark(day,x[1])===4)marks[k]=0;else delete marks[k]}});save();$("pick").close();render()}
  else if(act==="remove"){window.EXTRA&&EXTRA.remove(day,a);location.reload()}});
 $("pElse").addEventListener("click",e=>{const b=e.target.closest(".addbtn");if(!b||!window.EXTRA)return;EXTRA.add(b.dataset.day,b.dataset.t,b.dataset.a,b.dataset.v);b.outerHTML='<em class="ok">✓ toegevoegd</em>';setTimeout(()=>location.reload(),600)});
+if(window.WX)WX.load().then(d=>{if(d){WXDATA=d;if(!$("pick").open&&!$("ven").open)render()}});
 render();setInterval(()=>{if(!$("pick").open)render()},60000);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
